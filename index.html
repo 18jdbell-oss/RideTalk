@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#111827">
+
+  <title>RideTalk</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Arial, sans-serif;
+      background: #111827;
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 20px;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 500px;
+    }
+
+    h1 {
+      font-size: 46px;
+      margin-bottom: 5px;
+    }
+
+    .subtitle {
+      color: #9ca3af;
+      margin-bottom: 30px;
+    }
+
+    #status {
+      background: #1f2937;
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 25px;
+      font-size: 18px;
+    }
+
+    button {
+      width: 100%;
+      border: none;
+      border-radius: 22px;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    #startButton {
+      background: #2563eb;
+      padding: 18px;
+      font-size: 20px;
+      margin-bottom: 25px;
+    }
+
+    #talkButton {
+      width: 240px;
+      height: 240px;
+      border-radius: 50%;
+      background: #ef4444;
+      font-size: 27px;
+      touch-action: none;
+      box-shadow: 0 10px 30px rgba(0,0,0,.4);
+    }
+
+    #talkButton.talking {
+      background: #22c55e;
+      transform: scale(.96);
+    }
+
+    .instructions {
+      margin-top: 25px;
+      color: #9ca3af;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="app">
+
+  <h1>🏍️ RideTalk</h1>
+
+  <div class="subtitle">
+    Motorcycle Walkie-Talkie
+  </div>
+
+  <div id="status">
+    Tap Start RideTalk
+  </div>
+
+  <button id="startButton">
+    🎤 Start RideTalk
+  </button>
+
+  <button id="talkButton">
+    HOLD TO TALK
+  </button>
+
+  <div class="instructions">
+    Hold the red button while talking.<br>
+    Release it when you're finished.
+  </div>
+
+</div>
+
+<script>
+
+let microphone;
+let audioTracks = [];
+
+const startButton =
+  document.getElementById("startButton");
+
+const talkButton =
+  document.getElementById("talkButton");
+
+const status =
+  document.getElementById("status");
+
+
+async function startRideTalk() {
+
+  try {
+
+    microphone =
+      await navigator.mediaDevices.getUserMedia({
+        audio: true
+      });
+
+    audioTracks =
+      microphone.getAudioTracks();
+
+    audioTracks.forEach(track => {
+      track.enabled = false;
+    });
+
+    status.innerText =
+      "🟢 Ready — Hold button to talk";
+
+    startButton.innerText =
+      "✓ Microphone Ready";
+
+    startButton.disabled = true;
+
+  }
+
+  catch (error) {
+
+    status.innerText =
+      "Microphone permission is required.";
+
+  }
+}
+
+
+function startTalking(event) {
+
+  event.preventDefault();
+
+  if (!microphone) {
+    status.innerText =
+      "Tap Start RideTalk first";
+    return;
+  }
+
+  audioTracks.forEach(track => {
+    track.enabled = true;
+  });
+
+  talkButton.classList.add("talking");
+
+  talkButton.innerText =
+    "TALKING";
+
+  status.innerText =
+    "🎤 Transmitting...";
+}
+
+
+function stopTalking(event) {
+
+  if (event) {
+    event.preventDefault();
+  }
+
+  if (!microphone) return;
+
+  audioTracks.forEach(track => {
+    track.enabled = false;
+  });
+
+  talkButton.classList.remove("talking");
+
+  talkButton.innerText =
+    "HOLD TO TALK";
+
+  status.innerText =
+    "🟢 Ready — Hold button to talk";
+}
+
+
+startButton.addEventListener(
+  "click",
+  startRideTalk
+);
+
+talkButton.addEventListener(
+  "pointerdown",
+  startTalking
+);
+
+talkButton.addEventListener(
+  "pointerup",
+  stopTalking
+);
+
+talkButton.addEventListener(
+  "pointercancel",
+  stopTalking
+);
+
+talkButton.addEventListener(
+  "pointerleave",
+  stopTalking
+);
+
+</script>
+
+</body>
+</html>
